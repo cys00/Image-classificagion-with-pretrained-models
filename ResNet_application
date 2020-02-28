@@ -1,0 +1,57 @@
+Created on Tue Feb 25 23:33:51 2020
+
+@author: yusheng
+"""
+
+import os
+
+#for dirname, _, filenames in os.walk('/Users/yusheng/imageclassificationwithpretrainedmodel'):
+    #for filename in filenames:
+        #print(os.path.join(dirname,filename))
+
+img_dir = '/Users/yusheng/imageclassificationwithpretrainedmodel/'
+img_paths = [os.path.join(img_dir,filename) for filename in ['UNADJUSTEDNONRAW_thumb_399c.jpg',
+                                                             'UNADJUSTEDNONRAW_thumb_38b4.jpg',
+                                                             'UNADJUSTEDNONRAW_thumb_392a.jpg',
+                                                             'UNADJUSTEDNONRAW_thumb_2b1.jpg',
+                                                             'UNADJUSTEDNONRAW_thumb_3810.jpg',
+                                                             'UNADJUSTEDNONRAW_thumb_1c1.jpg']]
+
+from tensorflow.keras.preprocessing.image import load_img, img_to_array
+import numpy as np
+
+img_size = 224
+#imgs = [load_img(img_path,target_size=(250,255))for img_path in img_paths]
+#img_array = [img_to_array(img)for img in imgs] - list of arrays
+
+#define a function to read and prepare images before modeling
+def prep(img_paths, img_height = img_size, img_width = img_size):
+    imgs = [load_img(img_path, target_size = (img_height, img_width))for img_path in img_paths]
+    img_array = np.array([img_to_array(img)for img in imgs])
+    #The preprocess_input function is meant to adequate your image to the format the model requires.
+    #Some models use images with values ranging from 0 to 1. Others from -1 to +1. Others use the "caffe" style, that is not normalized, but is centered.
+    output =  preprocess_input(img_array)
+    return output
+
+from tensorflow.keras.applications.resnet50 import ResNet50
+
+model = ResNet50(weights='imagenet')
+test = prep(img_paths)
+preds = model.predict(test)
+
+from IPython.display import Image, display
+from tensorflow.keras.applications.resnet50 import decode_predictions
+
+most_likely_labels = decode_predictions(preds,top=3)
+
+for count, img_path in enumerate(img_paths):
+    display(Image(img_path))
+    print(most_likely_labels[count])
+
+
+
+
+
+
+
+
